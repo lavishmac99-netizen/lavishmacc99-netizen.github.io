@@ -5,152 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AttractX</title>
     <style>
+        :root {
+            --bg: #000;
+            --fg: #fff;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
+            background-color: var(--bg);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             overflow: hidden;
-            background-color: #050505;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
 
-        canvas {
+        /* The Background Design: A massive, subtle "X" made of light and shadow */
+        .bg-layer {
             position: absolute;
-            top: 0;
-            left: 0;
+            width: 150vw;
+            height: 150vh;
+            background: conic-gradient(
+                from 0deg at 50% 50%, 
+                #000 0deg 90deg, 
+                #050505 90deg 180deg, 
+                #000 180deg 270deg, 
+                #050505 270deg 360deg
+            );
+            animation: rotate 20s linear infinite;
             z-index: 1;
         }
 
-        .container {
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Main Content Wrapper */
+        .content {
             position: relative;
             z-index: 10;
             text-align: center;
-            pointer-events: none; /* Allows mouse to interact with background behind text */
+            mix-blend-mode: difference; /* This makes the text "react" to the light behind it */
         }
 
         h1 {
-            color: #ffffff;
-            font-size: clamp(3rem, 12vw, 8rem);
-            font-weight: 900;
-            letter-spacing: -0.04em;
+            color: #fff;
+            font-size: clamp(3rem, 15vw, 10rem);
+            font-weight: 800;
+            letter-spacing: -0.05em;
             margin: 0;
-            line-height: 1;
-        }
-
-        h1 span {
-            color: transparent;
-            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.4);
-        }
-
-        p {
-            color: #888;
-            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.8em;
-            margin-top: 20px;
-            font-weight: 300;
         }
+
+        .subtitle {
+            color: #fff;
+            font-size: 0.8rem;
+            letter-spacing: 1.2em;
+            text-transform: uppercase;
+            margin-top: 10px;
+            opacity: 0.8;
+            padding-left: 1.2em; /* offset for letter-spacing */
+        }
+
+        /* The "Attraction" Cursor */
+        .cursor-follower {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        /* Designer Touch: Thin frame lines */
+        .frame {
+            position: fixed;
+            top: 40px; bottom: 40px; left: 40px; right: 40px;
+            border: 1px solid rgba(255,255,255,0.05);
+            pointer-events: none;
+            z-index: 20;
+        }
+
     </style>
 </head>
 <body>
 
-    <canvas id="canvas"></canvas>
+    <div class="bg-layer" id="bg"></div>
+    <div class="cursor-follower" id="cursor"></div>
+    <div class="frame"></div>
 
-    <div class="container">
-        <h1>Attract<span>X</span></h1>
-        <p>Launching soon</p>
+    <div class="content">
+        <h1 id="title">AttractX</h1>
+        <p class="subtitle">Launching soon</p>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('cursor');
+        const bg = document.getElementById('bg');
+        const title = document.getElementById('title');
 
-        let particles = [];
-        const mouse = { x: null, y: null, radius: 150 };
+        document.addEventListener('mousemove', (e) => {
+            // Move the soft glow
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
 
-        window.addEventListener('mousemove', (event) => {
-            mouse.x = event.x;
-            mouse.y = event.y;
+            // Subtle parallax for the background
+            const moveX = (e.clientX - window.innerWidth / 2) * 0.05;
+            const moveY = (e.clientY - window.innerHeight / 2) * 0.05;
+            bg.style.transform = `translate(${moveX}px, ${moveY}px) rotate(${Date.now() / 5000}deg)`;
+
+            // Letter spacing reacts to mouse position (Attraction feel)
+            const dist = Math.abs(e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+            title.style.letterSpacing = `${-0.05 + (dist * 0.1)}em`;
         });
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            init();
-        }
-
-        class Particle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.baseX = x;
-                this.baseY = y;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.density = (Math.random() * 30) + 1;
-            }
-
-            draw() {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.fill();
-            }
-
-            update() {
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                let forceDirectionX = dx / distance;
-                let forceDirectionY = dy / distance;
-                let maxDistance = mouse.radius;
-                let force = (maxDistance - distance) / maxDistance;
-                let directionX = forceDirectionX * force * this.density;
-                let directionY = forceDirectionY * force * this.density;
-
-                if (distance < mouse.radius) {
-                    this.x += directionX;
-                    this.y += directionY;
-                } else {
-                    if (this.x !== this.baseX) {
-                        let dx = this.x - this.baseX;
-                        this.x -= dx / 20;
-                    }
-                    if (this.y !== this.baseY) {
-                        let dy = this.y - this.baseY;
-                        this.y -= dy / 20;
-                    }
-                }
-            }
-        }
-
-        function init() {
-            particles = [];
-            // Create a grid of particles
-            const gap = 30;
-            for (let y = 0; y < canvas.height; y += gap) {
-                for (let x = 0; x < canvas.width; x += gap) {
-                    particles.push(new Particle(x, y));
-                }
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].draw();
-                particles[i].update();
-            }
-            requestAnimationFrame(animate);
-        }
-
-        window.addEventListener('resize', resize);
-        resize();
-        animate();
     </script>
 </body>
 </html>
