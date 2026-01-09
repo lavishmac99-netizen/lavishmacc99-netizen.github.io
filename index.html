@@ -9,6 +9,7 @@
             --bg: #000;
             --fg: #fff;
             --accent: rgba(255, 255, 255, 0.4);
+            --panel-bg: rgba(0, 0, 0, 0.85);
         }
 
         body, html {
@@ -73,7 +74,140 @@
             mix-blend-mode: difference;
         }
 
-        /* --- MINIMALIST SUBSCRIPTION FORM --- */
+        /* --- INFO BUTTON --- */
+        .info-btn {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            width: 45px;
+            height: 45px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            font-family: serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            background: transparent;
+        }
+
+        .info-btn:hover {
+            background: white;
+            color: black;
+            transform: none; /* Rotation removed */
+        }
+
+        /* --- SLIDE PANEL --- */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -50%;
+            width: 50%;
+            height: 100%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 90;
+            transition: right 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 60px;
+            box-sizing: border-box;
+            color: white;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            overflow-y: auto; /* Enable scrolling */
+        }
+
+        /* --- CUSTOM SCROLLBAR --- */
+        .side-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+        .side-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .side-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        .side-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        /* Firefox Scrollbar Support */
+        .side-panel {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-content {
+            max-width: 550px;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.8s ease 0.3s;
+        }
+
+        .side-panel.active .panel-content {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .panel-content h2 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .panel-content .intro {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #ccc;
+            margin-bottom: 40px;
+        }
+
+        .features-header {
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.7rem;
+            margin-bottom: 25px;
+            display: block;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            padding-bottom: 40px; /* Space at bottom of scroll */
+        }
+
+        .features-list li {
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #999;
+        }
+
+        .features-list strong {
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+
+        /* --- FORM & ELEMENTS --- */
         .subscribe-form {
             margin-top: 60px;
             display: flex;
@@ -126,7 +260,6 @@
             transform: translateY(-2px);
         }
 
-        /* Success Message */
         #status-msg {
             display: none;
             color: #fff;
@@ -142,7 +275,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- DECORATIVE ELEMENTS --- */
         .cursor-follower {
             position: fixed;
             width: 500px;
@@ -162,6 +294,11 @@
             z-index: 20;
         }
 
+        @media (max-width: 900px) {
+            .side-panel { width: 100%; right: -100%; padding: 40px; }
+            .info-btn { top: 20px; right: 20px; }
+        }
+
     </style>
 </head>
 <body>
@@ -170,11 +307,51 @@
     <div class="cursor-follower" id="cursor"></div>
     <div class="frame"></div>
 
+    <div class="info-btn" id="info-trigger">i</div>
+
+    <div class="side-panel" id="side-panel">
+        <div class="panel-content">
+            <h2>AttractX — a design marketplace built for quality, not cheap volume.</h2>
+            <p class="intro">We match verified designers and teams with clients who want results — protected workflows, fair pricing floors, and delivery-first discovery.</p>
+            
+            <span class="features-header">Key features</span>
+            <ul class="features-list">
+                <li>
+                    <strong>Skill-weighted discovery</strong>
+                    Find designers by verified delivery, not price.
+                </li>
+                <li>
+                    <strong>Category-based Quality Floors</strong>
+                    Minimum professional price per project type so creators are fairly paid.
+                </li>
+                <li>
+                    <strong>Milestone-locked escrow</strong>
+                    No work starts until the milestone is funded; payments protected.
+                </li>
+                <li>
+                    <strong>Delivery-linked portfolios</strong>
+                    Portfolios only show work actually delivered through AttractX. (Harder to game.)
+                </li>
+                <li>
+                    <strong>Review arbitration & contested flags</strong>
+                    Designers can challenge unfair reviews when scope and logs prove compliance.
+                </li>
+                <li>
+                    <strong>Tiered commissions & subscription options</strong>
+                    Lower fees for verified/curated talent and subscription plans for power users.
+                </li>
+                <li>
+                    <strong>Team system & print delivery</strong>
+                    Built-in teams, printing partnerships, and post-delivery support for physical deliverables.
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <div class="content">
         <h1 id="title">AttractX</h1>
         <p class="subtitle">Launching soon</p>
 
-        <!-- Formspree Integration -->
         <form id="attractx-form" class="subscribe-form" action="https://formspree.io/f/xqearooe" method="POST">
             <div class="input-group" id="input-area">
                 <input type="email" name="email" placeholder="YOUR EMAIL ADDRESS" required>
@@ -186,10 +363,22 @@
     </div>
 
     <script>
-        // Background & Cursor Interaction
         const cursor = document.getElementById('cursor');
         const bg = document.getElementById('bg');
         const title = document.getElementById('title');
+        const infoTrigger = document.getElementById('info-trigger');
+        const sidePanel = document.getElementById('side-panel');
+
+        infoTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidePanel.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (sidePanel.classList.contains('active') && !sidePanel.contains(e.target) && e.target !== infoTrigger) {
+                sidePanel.classList.remove('active');
+            }
+        });
 
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
@@ -199,12 +388,10 @@
             const moveY = (e.clientY - window.innerHeight / 2) * 0.03;
             bg.style.transform = `translate(${moveX}px, ${moveY}px)`;
             
-            // Subtle letter spacing attraction
             const dist = Math.abs(e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
             title.style.letterSpacing = `${-0.05 + (dist * 0.08)}em`;
         });
 
-        // AJAX Form Submission (No redirect)
         const form = document.getElementById("attractx-form");
         const status = document.getElementById("status-msg");
         const inputArea = document.getElementById("input-area");
