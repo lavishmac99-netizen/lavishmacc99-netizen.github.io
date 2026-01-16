@@ -352,7 +352,8 @@
         <h1 id="title">AttractX</h1>
         <p class="subtitle">Launching soon</p>
 
-        <form id="attractx-form" class="subscribe-form" action="https://formspree.io/f/xqearooe" method="POST">
+        <!-- UPDATED FORMSPREE URL BELOW -->
+        <form id="attractx-form" class="subscribe-form" action="https://formspree.io/f/maqqnkpo" method="POST">
             <div class="input-group" id="input-area">
                 <input type="email" name="email" placeholder="YOUR EMAIL ADDRESS" required>
             </div>
